@@ -1,6 +1,9 @@
 Estudio de Layout Builder,
 Recoger la máxima Altura y Anchura de un Widget.
-Funciona recogiendo una lista de enteros, y cuando se pulsa 'Go' repinta la pantalla cubriendola de 
+Funciona recogiendo una lista de enteros, y cuando se pulsa 'Go' 
+  repinta la pantalla cubriendola de 
   containers proporcionales a la lista.
+
+  El algorimo es recursivo y con uso exhaustivo de Expande y su propiedad flex
 
   

@@ -41,11 +41,12 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
+          // ===========  FORMULARIO DE LA LISTA =========
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: TextField(
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               controller: myController,
             ),
           ),
@@ -59,10 +60,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   }),
               child: Text('Go')),
           //Divider(),
+          // ==============  LA LISTA =============
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ProporcionalLayout(data: toIntList(myController.text)),
+              child: LayoutRecursivo(data: toIntList(myController.text)),
             ),
           ),
           //Divider(),
@@ -72,20 +74,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class ProporcionalLayout extends StatelessWidget {
-  ProporcionalLayout({
+class LayoutRecursivo extends StatelessWidget {
+  LayoutRecursivo({
     Key key,
     var this.data,
   }) : super(key: key);
 
   var data = <int>[];
 
-  dynamic _reparto(List<int> data) {
-    var listas = [<int>[], <int>[]];
-    // ====== sort y uno a uno
-    data
-      ..sort()
-      ..reversed;
+  List<List<int>> _repartirItems(List<int> inList) {
+    var outList = [<int>[], <int>[]];
+    // ====== ordenamos
+    inList..sort((b, a) => a.compareTo(b));
+    //..reversed;
 
     // ====== reparto de uno a uno
     // for (var i = 0, j = 0; i < data.length; i++) {
@@ -102,52 +103,59 @@ class ProporcionalLayout extends StatelessWidget {
     // ==== reparto equilbrado y afin(iguales en la misma lista)
     var prevj = -1;
     var j = 0;
-    for (var i = 0; i < data.length; i++) {
-      if (prevj >= 0 && data[i] == listas[prevj].last)
+    for (var i = 0; i < inList.length; i++) {
+      if (prevj >= 0 && inList[i] == outList[prevj].last)
         j = prevj;
       else
-        j = _val(listas[0]) < _val(listas[1]) ? 0 : 1;
-      listas[j].add(data[i]);
+        j = _sum(outList[0]) < _sum(outList[1]) ? 0 : 1;
+      outList[j].add(inList[i]);
       prevj = j;
     }
-    if (listas[1].length < 1) listas[1].add(listas[0].removeLast());
-    if (listas[0].length < 1) listas[0].add(listas[1].removeLast());
+    if (outList[1].length < 1) outList[1].add(outList[0].removeLast());
+    if (outList[0].length < 1) outList[0].add(outList[1].removeLast());
 
     // ===== return ======
-    return listas;
+    return outList;
   }
 
-  int _val(List<int> data) =>
+  // la suma de valores de una lista
+  int _sum(List<int> data) =>
       data.fold(0, (previousValue, element) => previousValue + element).toInt();
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      if (data.length == 1)
-        return MiCaja(
-            txt:
-                '${data[0]}\n${constraints.maxWidth.toInt()} x ${constraints.maxHeight.toInt()}\n${(constraints.maxWidth * constraints.maxHeight).toInt()}');
-      var listas = _reparto(data);
+      // Si un solo elemento -> FIN
+      if (data.length == 1) return MiCaja(txt: '''
+${data[0]}
+${constraints.maxWidth.toInt()} x ${constraints.maxHeight.toInt()}
+${(constraints.maxWidth * constraints.maxHeight).toInt()}''');
+
+      // Si más elementos -> Repartimos
+      var listas = _repartirItems(data);
 
       if (constraints.maxWidth > constraints.maxHeight) {
+        // Si es más Ancho que Alto ->ROW
         return Row(children: [
           Expanded(
-              flex: _val(listas[0]),
-              child: ProporcionalLayout(data: listas[0])),
+            flex: _sum(listas[0]),
+            child: LayoutRecursivo(data: listas[0]),
+          ),
           Expanded(
-            flex: _val(listas[1]),
-            child: ProporcionalLayout(data: listas[1]),
+            flex: _sum(listas[1]),
+            child: LayoutRecursivo(data: listas[1]),
           )
         ]);
       }
+      // Es más Alto que Ancho -> COLUMN
       return Column(children: [
         Expanded(
-          flex: _val(listas[0]),
-          child: ProporcionalLayout(data: listas[0]),
+          flex: _sum(listas[0]),
+          child: LayoutRecursivo(data: listas[0]),
         ),
         Expanded(
-          flex: _val(listas[1]),
-          child: ProporcionalLayout(data: listas[1]),
+          flex: _sum(listas[1]),
+          child: LayoutRecursivo(data: listas[1]),
         )
       ]);
     });
@@ -155,10 +163,7 @@ class ProporcionalLayout extends StatelessWidget {
 }
 
 class MiCaja extends StatelessWidget {
-  const MiCaja({
-    Key key,
-    @required this.txt,
-  }) : super(key: key);
+  const MiCaja({Key key, @required this.txt}) : super(key: key);
 
   final String txt;
 
@@ -167,15 +172,12 @@ class MiCaja extends StatelessWidget {
     return Container(
       margin: EdgeInsets.fromLTRB(2, 2, 0, 0),
       decoration: BoxDecoration(
-        color: Colors.blueGrey[50],
+        color: Colors.grey[50], //blueGrey[50],
         border: Border.all(
-            color: Colors.blueGrey[200], //                   <--- border color
-            width: 1.0),
-        //color: Colors.blue,
-
-        borderRadius: BorderRadius.all(
-            Radius.circular(2.0) //                 <--- border radius here
-            ),
+          color: Colors.grey[400], //blueGrey[200],
+          width: 1.0,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(2.0)),
       ),
       child: Center(child: Text(txt, textAlign: TextAlign.center)),
     );
