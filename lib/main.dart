@@ -51,14 +51,14 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           FlatButton(
-              color: Colors.amber,
+              color: Colors.amber[400],
               onPressed: () => setState(() {
                     //myController.clear();
                     var txt = toIntList(myController.text).toString();
                     myController.text = txt.substring(1, txt.length - 1);
                     FocusScope.of(context).requestFocus(FocusNode());
                   }),
-              child: Text('Go')),
+              child: Text('Go', style: TextStyle(color: Colors.white))),
           //Divider(),
           // ==============  LA LISTA =============
           Expanded(
@@ -126,10 +126,13 @@ class LayoutRecursivo extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       // Si un solo elemento -> FIN
-      if (data.length == 1) return MiCaja(txt: '''
+      if (data.length == 1)
+        return MiCaja(
+            txt: '''
 ${data[0]}
 ${constraints.maxWidth.toInt()} x ${constraints.maxHeight.toInt()}
-${(constraints.maxWidth * constraints.maxHeight).toInt()}''');
+${(constraints.maxWidth * constraints.maxHeight).toInt()}''',
+            tip: '${data[0]}');
 
       // Si más elementos -> Repartimos
       var listas = _repartirItems(data);
@@ -163,9 +166,10 @@ ${(constraints.maxWidth * constraints.maxHeight).toInt()}''');
 }
 
 class MiCaja extends StatelessWidget {
-  const MiCaja({Key key, @required this.txt}) : super(key: key);
+  const MiCaja({Key key, @required this.txt, this.tip}) : super(key: key);
 
   final String txt;
+  final String tip;
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +183,24 @@ class MiCaja extends StatelessWidget {
         ),
         borderRadius: BorderRadius.all(Radius.circular(2.0)),
       ),
-      child: Center(child: Text(txt, textAlign: TextAlign.center)),
+      child: Center(
+        child: Tooltip(
+          message: tip,
+          child: Text(txt, textAlign: TextAlign.center),
+          padding: EdgeInsets.all(20),
+          margin: EdgeInsets.all(20),
+          showDuration: Duration(seconds: 10),
+          decoration: BoxDecoration(
+            color: Colors.amber.withOpacity(0.9),
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
+          ),
+          textStyle: TextStyle(
+            color: Colors.white,
+          ),
+          preferBelow: true,
+          verticalOffset: 20,
+        ),
+      ),
     );
   }
 }
